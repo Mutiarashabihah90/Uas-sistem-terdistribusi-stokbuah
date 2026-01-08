@@ -2,180 +2,82 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>CRUD Stok Buah - Toko Buah</title>
+    <title>Dashboard Stok Buah</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; padding: 40px; display: flex; flex-direction: column; align-items: center; }
-        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 650px; text-align: center; }
-        
-        .input-group { display: inline-block; text-align: left; margin: 10px; width: 40%; }
-        .input-group label { display: block; font-weight: bold; font-size: 14px; margin-bottom: 5px; color: #333; }
-        .input-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 25px; background: #fff; }
-        th { background-color: #f8f9fa; color: #333; font-weight: bold; padding: 12px; border-bottom: 2px solid #dee2e6; }
-        td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; }
-        
-        .btn-aksi { padding: 10px 25px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.3s; }
-        .btn-tambah { background: #28a745; color: white; }
-        .btn-update { background: #007bff; color: white; }
-        .btn-batal { background: #6c757d; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; margin-left: 5px; }
-        .logout-link { color: red; text-decoration: none; font-weight: bold; margin-top: 20px; display: inline-block; }
+        body { font-family: sans-serif; padding: 20px; background: #f0f2f5; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #007bff; color: white; }
+        .form-input { margin-bottom: 20px; display: flex; gap: 10px; }
+        input { padding: 10px; border: 1px solid #ddd; border-radius: 4px; flex: 1; }
+        button { padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
     </style>
 </head>
-<body onload="muatData()">
-
-<div class="card">
-    <h2>🍎 CRUD Stok Buah </h2>
-    
-    <input type="hidden" id="id_buah"> 
-
-    <div class="input-group">
-        <label for="nama">Nama Buah</label>
-        <input type="text" id="nama" placeholder="Contoh: Apel">
-    </div>
-
-    <div class="input-group">
-        <label for="stok">Stok (kg)</label>
-        <input type="number" id="stok" placeholder="Contoh: 50">
-    </div>
-    
-    <br>
-    <button id="btn-aksi" class="btn-aksi btn-tambah" onclick="simpanData()">Tambah Data</button>
-    <button id="btn-batal" class="btn-batal" onclick="resetForm()" style="display:none;">Batal</button>
-
-    <h3>Tabel Daftar Persediaan Buah</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Nama Buah</th>
-                <th>Stok Tersedia</th>
-                <th>Aksi Kelola</th>
-            </tr>
-        </thead>
-        <tbody id="tabel-buah"></tbody>
-    </table>
-    
-    <br>
-    <a href="index.html" class="logout-link">← Keluar (Logout)</a>
-</div>
-
-<script>
-    const API = 'http://localhost:3002/buah';
-
-    // 1. Ambil Data
-    async function muatData() {
-        try {
-            const res = await fetch(API);
-            const data = await res.json();
-            const tbody = document.getElementById('tabel-buah');
-            tbody.innerHTML = data.map(b => `
+<body>
+    <div class="container">
+        <h2>Manajemen Stok Buah</h2>
+        <div class="form-input">
+            <input type="text" id="nama" placeholder="Nama Buah">
+            <input type="number" id="stok" placeholder="Stok">
+            <input type="number" id="harga" placeholder="Harga">
+            <button onclick="tambahBuah()">Tambah</button>
+        </div>
+        <table>
+            <thead>
                 <tr>
-                    <td>${b.nama_buah}</td>
-                    <td><strong>${b.stok} kg</strong></td>
-                    <td>
-                        <button onclick="pilihEdit(${b.id}, '${b.nama_buah}', ${b.stok})" style="background:#ffc107; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Edit</button>
-                        <button onclick="hapus(${b.id})" style="background:#dc3545; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Hapus</button>
-                    </td>
+                    <th>Nama</th>
+                    <th>Stok</th>
+                    <th>Harga</th>
                 </tr>
-            `).join('');
-        } catch (error) {
-            // Notifikasi Error Ikon saat Gagal Koneksi
-            Swal.fire({
-                icon: 'error',
-                title: 'Gagal!',
-                text: 'Cek koneksi server Anda.',
-                confirmButtonColor: '#007bff'
-            });
-        }
-    }
+            </thead>
+            <tbody id="tabel-buah"></tbody>
+        </table>
+    </div>
 
-    // 2. Mode Edit
-    function pilihEdit(id, nama, stok) {
-        document.getElementById('id_buah').value = id;
-        document.getElementById('nama').value = nama;
-        document.getElementById('stok').value = stok;
-        const btn = document.getElementById('btn-aksi');
-        btn.innerText = "Update Data";
-        btn.className = "btn-aksi btn-update";
-        document.getElementById('btn-batal').style.display = "inline-block";
-    }
+    <script>
+        // GUNAKAN LINK NGROK YANG SAMA DENGAN INDEX.HTML
+        const API_URL = "https://reece-unanachronistic-kaysen.ngrok-free.dev"; 
 
-    // 3. Simpan & Update dengan Ikon Sukses
-    async function simpanData() {
-        const id = document.getElementById('id_buah').value;
-        const nama_buah = document.getElementById('nama').value;
-        const stok = document.getElementById('stok').value;
-
-        if(!nama_buah || !stok) {
-            return Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Harap isi semua kolom!' });
-        }
-
-        const method = id ? 'PUT' : 'POST';
-        const url = id ? `${API}/${id}` : API;
-
-        try {
-            const response = await fetch(url, {
-                method: method,
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ nama_buah, stok })
-            });
-
-            if (response.ok) {
-                // Notifikasi Sukses dengan Ikon Centang Hijau
-                Swal.fire({
-                    icon: 'success',
-                    title: id ? 'Berhasil Diperbarui!' : 'Berhasil Disimpan!',
-                    text: id ? 'Data buah telah diperbarui.' : 'Buah baru telah ditambahkan.',
-                    showConfirmButton: false,
-                    timer: 1500
+        async function muatData() {
+            try {
+                const res = await fetch(`${API_URL}/buah`);
+                const data = await res.json();
+                const tabel = document.getElementById('tabel-buah');
+                tabel.innerHTML = '';
+                data.forEach(b => {
+                    tabel.innerHTML += `<tr><td>${b.nama}</td><td>${b.stok}</td><td>Rp ${b.harga}</td></tr>`;
                 });
-                resetForm();
-                muatData();
-            } else {
-                throw new Error();
+            } catch (err) {
+                console.error("Gagal muat data", err);
             }
-        } catch (err) {
-            // Notifikasi Gagal Ikon
-            Swal.fire({ icon: 'error', title: 'Gagal!', text: 'Terjadi kesalahan saat menyimpan data.' });
         }
-    }
 
-    // 4. Hapus dengan Konfirmasi Ikon
-    async function hapus(id) {
-        Swal.fire({
-            title: 'Hapus data ini?',
-            text: "Data yang dihapus tidak bisa dikembalikan!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#dc3545',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Ya, Hapus!',
-            cancelButtonText: 'Batal'
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                try {
-                    const response = await fetch(`${API}/${id}`, { method: 'DELETE' });
-                    if (response.ok) {
-                        Swal.fire('Terhapus!', 'Data buah telah dihapus.', 'success');
-                        muatData();
-                    }
-                } catch (err) {
-                    Swal.fire('Gagal!', 'Gagal menghapus data.', 'error');
+        async function tambahBuah() {
+            const nama = document.getElementById('nama').value;
+            const stok = document.getElementById('stok').value;
+            const harga = document.getElementById('harga').value;
+
+            try {
+                const res = await fetch(`${API_URL}/buah`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ nama, stok, harga })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    Swal.fire('Berhasil', data.message, 'success');
+                    muatData();
+                } else {
+                    Swal.fire('Gagal', data.message, 'error');
                 }
+            } catch (err) {
+                Swal.fire('Error', 'Gagal menyambung ke API', 'error');
             }
-        });
-    }
+        }
 
-    function resetForm() {
-        document.getElementById('id_buah').value = '';
-        document.getElementById('nama').value = '';
-        document.getElementById('stok').value = '';
-        const btn = document.getElementById('btn-aksi');
-        btn.innerText = "Tambah Data";
-        btn.className = "btn-aksi btn-tambah";
-        document.getElementById('btn-batal').style.display = "none";
-    }
-</script>
+        muatData();
+    </script>
 </body>
 </html>

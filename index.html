@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <title>Sistem Admin Buah</title>
+    <meta charset="UTF-8">
+    <title>Sistem Admin Buah - Login</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f2f5; margin: 0; }
         .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 350px; text-align: center; }
@@ -26,6 +28,9 @@
     </div>
 
     <script>
+        // MASUKKAN LINK NGROK ANDA DI SINI
+        const API_URL = "https://reece-unanachronistic-kaysen.ngrok-free.dev"; 
+
         let mode = 'login';
         function switchTab(target) {
             mode = target;
@@ -42,20 +47,24 @@
             const email = document.getElementById('email').value;
             const endpoint = mode === 'login' ? '/login' : '/register';
 
-            const res = await fetch(`http://localhost:3001${endpoint}`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ username, password, email })
-            });
-            const data = await res.json();
-            alert(data.message);
+            try {
+                const res = await fetch(`${API_URL}${endpoint}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ username, password, email })
+                });
+                const data = await res.json();
 
-            if (res.ok) {
-                if (mode === 'login') {
-                    window.location.href = 'dashboard.html';
+                if (res.ok) {
+                    Swal.fire('Berhasil', data.message, 'success').then(() => {
+                        if (mode === 'login') window.location.href = 'dashboard.html';
+                        else switchTab('login');
+                    });
                 } else {
-                    switchTab('login'); // Otomatis pindah ke tab login setelah daftar
+                    Swal.fire('Gagal', data.message, 'error');
                 }
+            } catch (err) {
+                Swal.fire('Error', 'Server tidak merespon. Cek Ngrok!', 'error');
             }
         }
     </script>
